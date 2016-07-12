@@ -1,0 +1,69 @@
+---
+title: "S&P500"
+author: "Sharon Teo"
+date: "July 11, 2016"
+output: 
+  html_document:
+    keep_md: yes
+---
+
+# Library required
+```{R, warning=FALSE}
+library(tseries)
+```
+
+# Download S&P500 data 
+```{R, warning=FALSE}
+SNPdata <- get.hist.quote('^gspc',quote="Close")
+```
+
+# Length of S&P data
+```{R}
+length(SNPdata)
+```
+
+# Calculate S&P500 return using log
+```{R}
+SNPret <- log(lag(SNPdata))-log(SNPdata)
+```
+
+# Length of S&P log return
+```{R}
+length(SNPret)
+```
+
+# Calculate volatility of S&P in 250 trading days 
+```{R}
+SNPvol <- sd(SNPret) * sqrt(250) * 100
+SNPvol
+```
+
+# Volatility function
+```{R}
+vol <- function(d,logrets){
+  var=0
+  lam=0
+  varlist <- c()
+  for (r in logrets) {
+      lam = lam*(1 - 1/d) + 1
+  var = (1 - 1/lam)*var + (1/lam)*r^2
+        varlist <- c(varlist, var)
+  }
+  sqrt(varlist)
+}
+```
+# Calculate volatility over entire length of series for various three different decay factors.
+```{R}
+volest <- vol(10, SNPret)
+volest2 <- vol(30, SNPret)
+volest3 <- vol(100, SNPret)
+```
+
+# Plot the results, overlaying the volatility curves on the data
+
+```{R}
+plot(volest, type="l")
+lines(volest2, type="l",col="red")
+lines(volest3, type="l",col="blue")
+```
+
